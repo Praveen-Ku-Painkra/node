@@ -756,8 +756,8 @@ namespace {
 std::string UnitFromSkeleton(const icu::UnicodeString& skeleton) {
   std::string str;
   str = skeleton.toUTF8String<std::string>(str);
-  std::string search("unit/");
-  size_t begin = str.find(search);
+  static constexpr std::string_view kSearch = "unit/";
+  size_t begin = str.find(kSearch);
   if (begin == str.npos) {
     // Special case for "percent".
     if (str.find("percent") != str.npos) {
@@ -771,7 +771,7 @@ std::string UnitFromSkeleton(const icu::UnicodeString& skeleton) {
   // Ex:
   // "unit/milliliter-per-acre .### rounding-mode-half-up"
   //       b
-  begin += search.size();
+  begin += kSearch.size();
   if (begin == str.npos) {
     return "";
   }
@@ -1107,7 +1107,8 @@ MaybeDirectHandle<JSNumberFormat> JSNumberFormat::New(
   if (maybe_numberingSystem.FromJust()) {
     auto nu_extension_it = r.extensions.find("nu");
     if (nu_extension_it != r.extensions.end() &&
-        nu_extension_it->second != numbering_system_str) {
+        nu_extension_it->second != numbering_system_str &&
+        Intl::IsValidNumberingSystem(numbering_system_str)) {
       icu_locale.setUnicodeKeywordValue("nu", nullptr, status);
       DCHECK(U_SUCCESS(status));
     }

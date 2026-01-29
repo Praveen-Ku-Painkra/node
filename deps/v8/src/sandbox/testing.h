@@ -55,6 +55,14 @@ class SandboxTesting : public AllStatic {
   // Currently supported on Linux only.
   V8_EXPORT_PRIVATE static void Enable(Mode mode);
 
+  // Disable sandbox testing mode.
+  //
+  // This will uninstall the sandbox crash filter if it was previously enabled.
+  // This is mostly useful for manually reporting sandbox violations, in which
+  // case this method must be called prior to terminating the process via (for
+  // example) Abort().
+  V8_EXPORT_PRIVATE static void Disable();
+
   // Returns whether sandbox testing mode is enabled.
   static bool IsEnabled() { return mode_ != Mode::kDisabled; }
 
@@ -79,6 +87,12 @@ class SandboxTesting : public AllStatic {
   using FieldOffsets = std::unordered_map<std::string, int>;
   using FieldOffsetMap = std::unordered_map<InstanceType, FieldOffsets>;
   static FieldOffsetMap& GetFieldOffsetMap();
+
+  // Returns the field offset based on instance type and field name, or throws
+  // an error in the isolate and returns an empty optional.
+  V8_EXPORT_PRIVATE static std::optional<int> GetFieldOffset(
+      v8::Isolate* isolate_for_errors, InstanceType instance_type,
+      const std::string& field_name);
 
  private:
   static Mode mode_;

@@ -403,13 +403,9 @@ UNINITIALIZED_TEST(ConcurrentBlackAllocation) {
       if (v8_flags.black_allocated_pages) {
         CHECK(heap->marking_state()->IsUnmarked(object));
         if (i < kWhiteIterations * kObjectsAllocatedPerIteration) {
-          CHECK(!PageMetadata::FromHeapObject(object)
-                     ->Chunk()
-                     ->IsBlackAllocatedPage());
+          CHECK(!TrustedHeapLayout::InBlackAllocatedPage(object));
         } else {
-          CHECK(PageMetadata::FromHeapObject(object)
-                    ->Chunk()
-                    ->IsBlackAllocatedPage());
+          CHECK(TrustedHeapLayout::InBlackAllocatedPage(object));
         }
       } else {
         if (i < kWhiteIterations * kObjectsAllocatedPerIteration) {
@@ -563,8 +559,7 @@ UNINITIALIZED_TEST(ConcurrentRecordRelocSlot) {
       heap::AbandonCurrentlyFreeMemory(heap->old_space());
       DirectHandle<HeapNumber> value_handle(
           i_isolate->factory()->NewHeapNumber<AllocationType::kOld>(1.1));
-      heap::ForceEvacuationCandidate(
-          PageMetadata::FromHeapObject(*value_handle));
+      heap::ForceEvacuationCandidate(NormalPage::FromHeapObject(*value_handle));
       code = *code_handle;
       value = *value_handle;
     }
